@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import PeopleSerializer
+from .serializers import PeopleSerializer, LoginSerializer
 from .models import People
 from rest_framework import status
 
@@ -45,13 +45,13 @@ def person(request):
     elif request.method=="POST":
         data=request.data
         serializer=PeopleSerializer(data=data)
-        print(serializer)
         if serializer.is_valid():
+            print(serializer)
+            #print("hi from serilaizer fnction"), this i s to check whether it is workng or not
             serializer.save()   
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
             # return Response("Added successfully to the database", status=status.HTTP_201_CREATED)
-
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         #serializer.errors throws the errors message if the user is sending the random data not defined in serializer class
@@ -96,3 +96,15 @@ def person(request):
         except Exception as e:
             print("Error:", e)
             return Response({"message": "An error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+def login(request):
+    data=request.data
+    seri=LoginSerializer(data=data)
+    if seri.is_valid():
+        print(seri)
+        return Response(seri.data, status=status.HTTP__200__OK)
+    return Response ({'mesage':'Invalid format'})
+
+
