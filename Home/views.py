@@ -1,7 +1,9 @@
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+from rest_framework import authentication, permissions
 from rest_framework.response import Response
-from .serializers import PeopleSerializer, LoginSerializer
-from .models import People
+from .serializers import *
+from .models import *
 from rest_framework import status
 
 # Create your views here.
@@ -31,7 +33,78 @@ def index(request):
         print("put method enabled")
         return Response("hello from the put method")
 
-        
+class PeopleApi(APIView):
+    def get (self, request):
+        obj=People.objects.all()
+            #use of serializer
+        seri=PeopleSerializer(obj, many=True)
+            #if has to get single data then no need to use many=True, else have to
+        return Response(seri.data)
+
+    def post(self, request):
+        data=request.data
+        serializer=PeopleSerializer(data=data)
+        if serializer.is_valid():
+            #print("hi from serilaizer fnction"), this i s to check whether it is workng or not
+            serializer.save()   
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # return Response({"message": "This is the post method"})
+    
+    def put(self, request):
+        data=request.data
+        print(data)
+        try:
+            obj=People.objects.get(id=data["id"])
+            print(obj)
+            serializer=PeopleSerializer(obj,data=data)
+            if serializer.is_valid():
+                serializer.save()   
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response("object not found", status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "This is the put method"})
+    
+    def patch(self, request):
+        data=request.data
+        try:
+            obj=People.objects.get(id=data["id"])
+            #in patch has to set partial =True
+            serializer=PeopleSerializer(obj,data=data, partial=True)
+            
+            if serializer.is_valid():
+                print(obj.name)
+                serializer.save()   
+                
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(f"object not found {e}", status=status.HTTP_404_NOT_FOUND)
+     
+        return Response({"message": "This is the patch method"})
+    
+    def delete(self, request):
+        try:
+            data = request.data
+            obj = People.objects.get(id=data["id"])
+            obj.delete()
+            return Response({"message": "obj deleted"}, status=status.HTTP_200_OK)
+        except People.DoesNotExist:
+            print("Object not found")
+            return Response({"message": "obj not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print("Error:", e)
+            return Response({"message": "An error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # return Response({"message": "This is the delete method"})
+
+
+
+
+
+
+
 @api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def person(request):
     if request.method=="GET":
@@ -98,13 +171,45 @@ def person(request):
             return Response({"message": "An error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
+
+
+
+
 @api_view(["POST"])
 def login(request):
+    if request.method=="GET":
+        obj=LoginSerializer.objects.all()
+        serializer= LoginSerializer(obj, many=True)       
+        return Response(serializer.data, status=status.HTTP__200__OK)
+
     data=request.data
     seri=LoginSerializer(data=data)
     if seri.is_valid():
         print(seri)
-        return Response(seri.data, status=status.HTTP__200__OK)
+        return Response(seri.data, status=status.HTTP_200_OK)
     return Response ({'mesage':'Invalid format'})
+
+
+class Colorapi(APIView):
+    def get(self, request):
+        color=Colors.objects.all()
+        serializer=Colorserializer(color, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        data=request.data
+        serializer= Colorserializer(data=data)
+        if serializer.is_valid():
+            print(serializer)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+
+
+
+
 
 
