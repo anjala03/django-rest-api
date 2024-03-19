@@ -17,8 +17,8 @@ class People(models.Model):
 
     def __str__(self) -> str:
         return self.name
-    class Meta:
-        ordering=["name"]
+    # class Meta:
+    #     ordering=["name"]
 
 
 

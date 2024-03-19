@@ -30,15 +30,13 @@ class PeopleSerializer(serializers.ModelSerializer):
                 if s ==c:
                     print("invalid character found",s)
                     raise serializers.ValidationError({"message":" name cannot contain special characters"})
-            try:
-                if data.get('age'):
-                    if(data["age"]>=18):
-                        return data
-            #  this  will  return a value which will be sent to the post method defned in the  view.py
-                raise serializers.ValidationError({"message":"Age is less than 18"})
-            except Exception as e:
-                print("ageerror", e)
-                return data
+        
+        
+        if(data["age"]>=18):
+            return data
+        #  this  will  return a value which will be sent to the post method defned in the  view.py
+        raise serializers.ValidationError({"message":"Age is less than 18"})
+                    
             
             
     

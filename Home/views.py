@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from .serializers import *
 from .models import *
 from rest_framework import status
+from rest_framework import viewsets
+
+
+
 
 # Create your views here.
  
@@ -32,6 +36,10 @@ def index(request):
     elif request.method=="PUT":
         print("put method enabled")
         return Response("hello from the put method")
+
+
+
+
 
 class PeopleApi(APIView):
     def get (self, request):
@@ -206,6 +214,31 @@ class Colorapi(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+#usecase of viewset, have to use router for url pattern
+class PeopleViewSet(viewsets.ModelViewSet):
+    #be sure to use the proper viewset, here used ModelViewSet
+    serializer_class=PeopleSerializer
+    queryset=People.objects.all()
+
+#the list method acts just like the get method here, one can modify the method as per the use
+    def list(self, request):
+        search=request.GET.get('search')
+        queryset=self.queryset
+        print(queryset)
+        if search:
+            query=queryset.filter(name__startswith=search)
+            serializer=PeopleSerializer(query, many=True)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    
+    
+        
+
+
             
 
 
