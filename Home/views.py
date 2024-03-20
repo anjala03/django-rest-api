@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 #to use the authenticate() method
 from django.contrib.auth import authenticate
-
+from django.core.paginator import Paginator
 
 
 
@@ -51,11 +51,22 @@ class PeopleApi(APIView):
     permission_classes =[IsAuthenticated]
     authentication_classes =[TokenAuthentication]
     def get (self, request):
-        obj=People.objects.all()
+        try:
+            obj=People.objects.all()
             #use of serializer
-        seri=PeopleSerializer(obj, many=True)
+        # seri=PeopleSerializer(obj, many=True)
             #if has to get single data then no need to use many=True, else have to
-        return Response(seri.data)
+            print("Authenticated user: ", request.user)
+            page=request.GET.get("page",1)
+            page_size=3
+            paginator=Paginator(obj,page_size)
+            serializer=PeopleSerializer(paginator.page(page), many=True)
+            #request.user provides the name of the user who is sending request at the moment
+            return Response({"status": "success", "data":serializer.data})
+        except Exception as e:
+            print(e)
+            return Response({"status":"False", "mesage":"no content in this page"})
+        
 
     def post(self, request):
         data=request.data
