@@ -11,6 +11,7 @@ urlpatterns= router.urls
 urlpatterns = [
     #this is the way viewset are given the configurations
     path('', include(router.urls)),
+    path('register/', register.as_view()),
     path('index/', index),
     path('person/', person),
     path('login/', login),

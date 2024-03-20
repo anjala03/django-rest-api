@@ -6,7 +6,7 @@ from .serializers import *
 from .models import *
 from rest_framework import status
 from rest_framework import viewsets
-
+from django.contrib.auth.models import User
 
 
 
@@ -233,16 +233,32 @@ class PeopleViewSet(viewsets.ModelViewSet):
             serializer=PeopleSerializer(query, many=True)
             return Response(serializer.data)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
     
+    #similaryly  other operations can be fperfom in the viewset such
+    def create(self, request):
+        pass
+
+    def retrieve(self, request, pk=None):
+        pass
+
+    def update(self, request,pk=None):
+        pass
+    #pk=None will be override later when the primary key is provided  via the request
+
+    def partial_update(self, request, pk=None):
+        pass
+
+    def destroy(self, request, pk=None):
+        pass
     
-        
 
-
-            
-
-
-
-
-
-
+#register the user
+class register(APIView):
+    def post(self, request):
+        data=request.data
+        serializer=RegisterSerializer(data=data)
+        print(serializer)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": True, "message":"user created"},status.HTTP_201_CREATED)
+        return Response({"status": False, "error_message":serializer.errors},status.HTTP_400_BAD_REQUEST)
