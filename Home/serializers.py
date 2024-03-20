@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import People, Colors
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+
 
 
 class Colorserializer(serializers.ModelSerializer):
@@ -47,7 +49,6 @@ class PeopleSerializer(serializers.ModelSerializer):
 # normal kind of serializer, used in validation specifically, just the serializer class not the ModelSerializer, doesnot need the model, no data is savedd in the database, no use of create method
 class LoginSerializer(serializers.Serializer):
     username=serializers.CharField(max_length=20)
-    email=serializers.EmailField()
     password=serializers.CharField(max_length=20)
 #only the necseesary fields and validation logic in serializer class
     

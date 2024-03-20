@@ -7,6 +7,13 @@ from .models import *
 from rest_framework import status
 from rest_framework import viewsets
 from django.contrib.auth.models import User
+#for authentication, first register in settings
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication,TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authtoken.models import Token
+#to use the authenticate() method
+from django.contrib.auth import authenticate
+
 
 
 
@@ -39,9 +46,10 @@ def index(request):
 
 
 
-
-
 class PeopleApi(APIView):
+    #permission classes and authentication classes must be szpecified to use the token 
+    permission_classes =[IsAuthenticated]
+    authentication_classes =[TokenAuthentication]
     def get (self, request):
         obj=People.objects.all()
             #use of serializer
@@ -262,3 +270,20 @@ class register(APIView):
             serializer.save()
             return Response({"status": True, "message":"user created"},status.HTTP_201_CREATED)
         return Response({"status": False, "error_message":serializer.errors},status.HTTP_400_BAD_REQUEST)
+ #login the user   
+class login(APIView):
+    def post(self,request):
+        data=request.data
+        serializer=LoginSerializer(data=data)
+        print(serializer)
+        if serializer.is_valid():
+            user=authenticate(username=serializer.data["username"], password=serializer.data["password"])
+            if not user== None:          
+                token=Token.objects.get_or_create(user=user)
+                print("authorized user", request.user)
+                return Response({"status": True, "message":"login successfull", "token":str(token)},status.HTTP_200_OK)
+            #the Token and id is needed (received when str(token) is done )when the authorization is set to perform certain actions, in the headre of get, has to set "Authorization" as key and "Token eb3bfd7c7f1e0553bcaabf7f34e38c350475731b" as value 
+            return Response({"status": False, "error_message":serializer.errors},status.HTTP_401_UNAUTHORIZED)
+        return Response({"status": False, "error_message":serializer.errors},status.HTTP_400_BAD_REQUEST)
+
+
