@@ -14,6 +14,7 @@ from rest_framework.authtoken.models import Token
 #to use the authenticate() method
 from django.contrib.auth import authenticate
 from django.core.paginator import Paginator
+from rest_framework.decorators import action
 
 
 
@@ -45,7 +46,6 @@ def index(request):
         return Response("hello from the put method")
 
 
-
 class PeopleApi(APIView):
     #permission classes and authentication classes must be szpecified to use the token 
     permission_classes =[IsAuthenticated]
@@ -53,19 +53,19 @@ class PeopleApi(APIView):
     def get (self, request):
         try:
             obj=People.objects.all()
-            #use of serializer
-        # seri=PeopleSerializer(obj, many=True)
-            #if has to get single data then no need to use many=True, else have to
+          #seri=PeopleSerializer(obj, many=True),,,if has to get single data then no need to use many=True, else have to
             print("Authenticated user: ", request.user)
+            #request.user provides the name of the user who is sending request at the moment
             page=request.GET.get("page",1)
             page_size=3
+            #page_size= how many objects you want to show in a page
             paginator=Paginator(obj,page_size)
+            #use of serializer  
             serializer=PeopleSerializer(paginator.page(page), many=True)
-            #request.user provides the name of the user who is sending request at the moment
             return Response({"status": "success", "data":serializer.data})
         except Exception as e:
             print(e)
-            return Response({"status":"False", "mesage":"no content in this page"})
+            return Response({"status":"False", "mesage":"no content in this page"}, status.HTTP_404_NOT_FOUND)
         
 
     def post(self, request):
@@ -125,11 +125,6 @@ class PeopleApi(APIView):
             print("Error:", e)
             return Response({"message": "An error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     # return Response({"message": "This is the delete method"})
-
-
-
-
-
 
 
 @api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
@@ -198,11 +193,6 @@ def person(request):
             return Response({"message": "An error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
-
-
-
-
 @api_view(["POST"])
 def login(request):
     if request.method=="GET":
@@ -241,6 +231,7 @@ class PeopleViewSet(viewsets.ModelViewSet):
     #be sure to use the proper viewset, here used ModelViewSet
     serializer_class=PeopleSerializer
     queryset=People.objects.all()
+    http_method_names=["get"]
 
 #the list method acts just like the get method here, one can modify the method as per the use
     def list(self, request):
@@ -266,10 +257,14 @@ class PeopleViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, pk=None):
         pass
-
     def destroy(self, request, pk=None):
         pass
-    
+    # use of action decorator
+    @action(detail=True, methods=["POST", "GET"] )
+    def send_email_to_person(self, request, pk=None):
+        print(f"this is to know what is pk", {pk})
+        return Response({"message":"mail sent succeesfully", "status":"success"})
+
 
 #register the user
 class register(APIView):
@@ -289,11 +284,12 @@ class login(APIView):
         print(serializer)
         if serializer.is_valid():
             user=authenticate(username=serializer.data["username"], password=serializer.data["password"])
-            if not user== None:          
+            if not user== None: 
+                # this is to generate token id for valid user         
                 token=Token.objects.get_or_create(user=user)
                 print("authorized user", request.user)
                 return Response({"status": True, "message":"login successfull", "token":str(token)},status.HTTP_200_OK)
-            #the Token and id is needed (received when str(token) is done )when the authorization is set to perform certain actions, in the headre of get, has to set "Authorization" as key and "Token eb3bfd7c7f1e0553bcaabf7f34e38c350475731b" as value 
+            #the Token and id is needed (received when str(token) is done )when the authorization is set to perform certain actions, in the header of get, has to set "Authorization" as key and "Token eb3bfd7c7f1e0553bcaabf7f34e38c350475731b" as value 
             return Response({"status": False, "error_message":serializer.errors},status.HTTP_401_UNAUTHORIZED)
         return Response({"status": False, "error_message":serializer.errors},status.HTTP_400_BAD_REQUEST)
 
